@@ -1,0 +1,4 @@
+# non source code
+dist
+node_modules
+.parcel-cache

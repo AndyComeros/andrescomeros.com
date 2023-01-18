@@ -1,5 +1,15 @@
-/*reset padding to avoid gaps*/
 * {padding: 0px; margin: 0px;}
+
+#bg{
+    z-index: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;            
+    position: absolute;
+    top: 0;
+    left: 0;
+
+}
 
 html {
 	scroll-behavior: smooth;
@@ -82,7 +92,7 @@ section#skills{
 }
 .navbar a {
 	float: left;
-	color: #C6DEFD;
+	color: #ffffff;
 	text-align: center;
 	padding: 12px 10px;
 	text-decoration: none;
@@ -107,14 +117,14 @@ section#skills{
 	transform: translateY(-10px) scale(1.2);
 }
 
-#hello{
+.hello{
 
 	font-family: Arial, sans-serif;
 	font-size: 90pt;
 	color: #ffffff;
 }
 
-p#hello{
+p.hello{
 	list-style-type: none;
 	display: flex;
 	flex-wrap: wrap;

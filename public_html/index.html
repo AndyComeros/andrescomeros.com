@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="title" content="Andres Comeros-Ochtman">
@@ -28,15 +27,58 @@
 	<button onclick="topFunction()" id="myBtn" title="Back to start"> ▲ </button>
 
 	<div class="container">
-	
 		<section id="hello">
+				<!----------START WEBGL STUFF---------->
+	<canvas id="bg"></canvas>
+
+    <script type="vertex" id="vertexshader">
+        uniform float time;
+
+        vec2 random2(vec2 st){
+            st = vec2( dot(st,vec2(127.1,311.7)),
+            dot(st,vec2(269.5,183.3)) );
+            return -1.0 + 2.0*fract(sin(st)*43758.5453123);
+        }
+
+        float noise(float x, float y) {
+            vec2 st = vec2(x,y);
+            vec2 i = floor(st);
+            vec2 f = fract(st);
+
+            vec2 u = f*f*(3.0-2.0*f);
+
+            return mix( mix( dot( random2(i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ),
+                        dot( random2(i + vec2(1.0,0.0) ), f - vec2(1.0,0.0) ), u.x),
+                        mix( dot( random2(i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ),
+                        dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
+        }
+
+        void main(){ 
+            float res = 0.1f;
+            float mult = 3.0f;
+
+            float offset = noise((position.x * res) + time, (position.y * res) + time);
+
+            vec4 result = vec4(position.x, position.y, position.z + offset * mult,1.0);
+            gl_Position = projectionMatrix * modelViewMatrix * result;
+
+        }
+    </script>
+
+    <script type="fragment" id="fragmentshader">
+        void main() { 
+            gl_FragColor = vec4(0.0,1.0,0.0,1.0);
+        }       
+    </script>
+    <script src="./js/script.js" type="module"> </script>
+	<!----------END WEBGL STUFF---------->
 			<div class="centered">
-				<div><br/><h1 id="hello">Hi, I'm Andy</h1></div>
-				<p id="hello">I'm a third year Computer Science major. I like programming and making games.</p>
-				<div>
-				<a class="imgLink" alt="my github" href="https://github.com/AndyComeros"><img border="0" alt="github" src="images/github_logo.png" width="50" height="50"></a>&nbsp;
-				<a class="imgLink" alt="my linkedin" href="https://www.linkedin.com/in/andres-comeros-ochtman-95ba44168/"><img border="0" alt="linkedin" src="images/linkedin_logo.png" width="50" height="50"></a>&nbsp;
-				<a class="imgLink" alt="Email me" href="mailto:andyocht@gmail.com"><img border="0" alt="github" src="images/email_logo.png" width="50" height="50"></a>&nbsp;
+				<div><br/><h1 class="hello">Hi, I'm Andres</h1></div>
+				<p class="hello">I'm a third year Computer Science major. I like programming and making games.</p>
+				<div><br/>
+				<a class="imgLink" href="https://github.com/AndyComeros"><img border="0" alt="github" src="images/github_logo.png" width="50" height="50"></a>&nbsp;
+				<a class="imgLink" href="https://www.linkedin.com/in/andres-comeros-ochtman-95ba44168/"><img border="0" alt="linkedin" src="images/linkedin_logo.png" width="50" height="50"></a>&nbsp;
+				<a class="imgLink" href="mailto:andyocht@gmail.com"><img border="0" alt="github" src="images/email_logo.png" width="50" height="50"></a>&nbsp;
 			    </div>
 			</div>
 		</section>
@@ -48,16 +90,16 @@
 					<table class="projectshow">
 						<tr>
 							<td>
-								<a class="imgLink" alt="my github" href="https://github.com/AndyComeros"><img border="0" alt="github" src="images/github_logo.png" width="50" height="50"></a>
+								<a class="imgLink" href="https://github.com/AndyComeros"><img border="0" alt="github" src="images/github_logo.png" width="50" height="50"></a>
 								<h1>Tron Clone</h1><br/>
 								<p>A Tron Clone written in C++ using openGL 3.3. Customise your vechicle and Play against up to 20 AI opponents.</p><br>
-								<iframe class="ytvideo" src="https://www.youtube.com/embed/UIdgzrJOnJ8" title="ICT290 Assignment2 Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+								<iframe class="ytvideo" src="https://www.youtube.com/embed/UIdgzrJOnJ8" title="ICT290 Assignment2 Demo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 							</td>
 							<td>
-								<a class="imgLink" alt="my github" href="https://github.com/AndyComeros/BilliardsProject"><img border="0" alt="github" src="images/github_logo.png" width="50" height="50"></a>
+								<a class="imgLink" href="https://github.com/AndyComeros/BilliardsProject"><img border="0" alt="github" src="images/github_logo.png" width="50" height="50"></a>
 								<h1>Billiards Game</h1><br/>
 								<p>A 3D billiads game wirtten in c using legacy openGL. Try to sink all the balls in the smallest amount of moves possible using elastic collision based physics.</p><br>
-								<iframe src="https://www.youtube.com/embed/2hC6C8TUSTs" title="ICT289 Presentation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+								<iframe src="https://www.youtube.com/embed/2hC6C8TUSTs" title="ICT289 Presentation" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 							</td>
 							<td>
 								<h1>Coming Soon</h1>
@@ -80,18 +122,18 @@
 				<div> 
 					<ul class="skills-list">
 					  
-					  <li><img src="images/skill_icons/cpp.png"			width="90" height="90"/>C++</li>
-					  <li><img src="images/skill_icons/c.png"			width="90" height="90"/>C</li>
-					  <li><img src="images/skill_icons/opengl.png"		width="90" height="90"/>OpenGL</li>
-					  <li><img src="images/skill_icons/git.png" 		width="90" height="90"/>Git</li>
-					  <li><img src="images/skill_icons/html.png" 		width="90" height="90"/>HTML5</li>
-					  <li><img src="images/skill_icons/css.png" 		width="90" height="90"/>CSS</li>
-					  <li><img src="images/skill_icons/javascript.png" 	width="90" height="90"/>Javascript</li>
-					  <li><img src="images/skill_icons/php.png" 		width="90" height="90"/>PHP</li>
-					  <li><img src="images/skill_icons/mysql.png" 		width="90" height="90"/>SQL</li>
-					  <li><img src="images/skill_icons/linux.png" 		width="90" height="90"/>Linux</li>
-					  <li><img src="images/skill_icons/java.png" 		width="90" height="90"/>Java</li>
-					  <li><img src="images/skill_icons/unity.png" 		width="90" height="90"/>Unity</li>
+					  <li><img src="images/skill_icons/cpp.png"			alt="" width="90" height="90"/>C++</li>
+					  <li><img src="images/skill_icons/c.png"			alt="" width="90" height="90"/>C</li>
+					  <li ><img src="images/skill_icons/opengl.png"		alt="" width="90" height="90"/>OpenGL</li>
+					  <li><img src="images/skill_icons/git.png" 		alt="" width="90" height="90"/>Git</li>
+					  <li><img src="images/skill_icons/html.png" 		alt="" width="90" height="90"/>HTML5</li>
+					  <li><img src="images/skill_icons/css.png" 		alt="" width="90" height="90"/>CSS</li>
+					  <li><img src="images/skill_icons/javascript.png" 	alt="" width="90" height="90"/>Javascript</li>
+					  <li><img src="images/skill_icons/php.png" 		alt="" width="90" height="90"/>PHP</li>
+					  <li><img src="images/skill_icons/mysql.png" 		alt="" width="90" height="90"/>SQL</li>
+					  <li><img src="images/skill_icons/linux.png" 		alt="" width="90" height="90"/>Linux</li>
+					  <li><img src="images/skill_icons/java.png" 		alt="" width="90" height="90"/>Java</li>
+					  <li><img src="images/skill_icons/unity.png" 		alt="" width="90" height="90"/>Unity</li>
 					</ul>
 					<br/>
 					<a href="./Andres_Comeros-Ochtman_Resume.pdf">View My Resume</a>
@@ -105,16 +147,15 @@
 				<h1>Contact Me</h1><br/>
 				<div class="contact">
 					<ul class="skills-list">	  
-						<li><a class="imgLink" alt="My github" href="https://github.com/AndyComeros">	<img src="images/github_logo.png"   width="90" height="90"></a>My Github</li>
-						<li><a class="imgLink" alt="My Linked in" href="https://www.linkedin.com/in/andres-comeros-ochtman-95ba44168/"><img src="images/linkedin_logo.png" width="90" height="90"></a>My Linked in</li>
-						<li><a class="imgLink" alt="Email Me" href="mailto:andyocht@gmail.com">	<img src="images/email_logo.png"    width="90" height="90"></a>Email Me</li>
+						<li><a class="imgLink"  href="https://github.com/AndyComeros">								 <img src="images/github_logo.png"   alt="" width="90" height="90"></a>My Github</li>
+						<li><a class="imgLink"  href="https://www.linkedin.com/in/andres-comeros-ochtman-95ba44168/"><img src="images/linkedin_logo.png" alt="" width="90" height="90"></a>My Linked in</li>
+						<li><a class="imgLink"  href="mailto:andyocht@gmail.com">									 <img src="images/email_logo.png"    alt="" width="90" height="90"></a>Email Me</li>
 					</ul>
 					</div>
 				</div>
-			</div>
 		</section>
 	</div>
-	<script src="nav.js"></script>
+	<script src="./js/nav.js"></script>
 </body>
 
 </html>
