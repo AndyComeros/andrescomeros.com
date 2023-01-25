@@ -28,52 +28,13 @@
 
 	<div class="container">
 		<section id="hello">
-				<!----------START WEBGL STUFF---------->
+	<!----------START WEBGL STUFF---------->
 	<canvas id="bg"></canvas>
-
-    <script type="vertex" id="vertexshader">
-        uniform float time;
-
-        vec2 random2(vec2 st){
-            st = vec2( dot(st,vec2(127.1,311.7)),
-            dot(st,vec2(269.5,183.3)) );
-            return -1.0 + 2.0*fract(sin(st)*43758.5453123);
-        }
-
-        float noise(float x, float y) {
-            vec2 st = vec2(x,y);
-            vec2 i = floor(st);
-            vec2 f = fract(st);
-
-            vec2 u = f*f*(3.0-2.0*f);
-
-            return mix( mix( dot( random2(i + vec2(0.0,0.0) ), f - vec2(0.0,0.0) ),
-                        dot( random2(i + vec2(1.0,0.0) ), f - vec2(1.0,0.0) ), u.x),
-                        mix( dot( random2(i + vec2(0.0,1.0) ), f - vec2(0.0,1.0) ),
-                        dot( random2(i + vec2(1.0,1.0) ), f - vec2(1.0,1.0) ), u.x), u.y);
-        }
-
-        void main(){ 
-            float res = 0.1f;
-            float mult = 3.0f;
-
-            float offset = noise((position.x * res) + time, (position.y * res) + time);
-
-            vec4 result = vec4(position.x, position.y, position.z + offset * mult,1.0);
-            gl_Position = projectionMatrix * modelViewMatrix * result;
-
-        }
-    </script>
-
-    <script type="fragment" id="fragmentshader">
-        void main() { 
-            gl_FragColor = vec4(0.0,1.0,0.0,1.0);
-        }       
-    </script>
     <script src="./js/script.js" type="module"> </script>
 	<!----------END WEBGL STUFF---------->
 	
 			<div class="centered">
+				
 				<div><br/><h1 class="hello">Hi, I'm Andres</h1></div>
 				<p class="hello">I'm a third year Computer Science major. I like programming and making games.</p>
 				<div><br/>
@@ -81,6 +42,7 @@
 				<a class="imgLink" href="https://www.linkedin.com/in/andres-comeros-ochtman-95ba44168/"><img border="0" alt="linkedin" src="images/linkedin_logo.png" width="50" height="50"></a>&nbsp;
 				<a class="imgLink" href="mailto:andyocht@gmail.com"><img border="0" alt="github" src="images/email_logo.png" width="50" height="50"></a>&nbsp;
 			    </div>
+				
 			</div>
 			
 		</section>

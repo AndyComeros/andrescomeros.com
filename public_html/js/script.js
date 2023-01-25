@@ -1,49 +1,74 @@
 import * as THREE from 'three';
-import { RedFormat, Vector3 } from 'three';
+import { Int8Attribute, RedFormat, Vector3 } from 'three';
 import { randFloat, randInt } from 'three/src/math/MathUtils';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { GLTFLoader, OBJLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-class SpaceShip{
-    constructor(id,team,color,mesh){
+class lazer{
+    constructor(scene, position, direction, color){
+       
+        
+        const speed = 2;
+        this.direction = direction;
+        let lifeTime = 5;
+        const bGeom = new THREE.BoxGeometry(1);
+        const bMat = new THREE.MeshBasicMaterial({color:color, wireframe: false,});
+        this.myMesh = new THREE.Mesh(bGeom, bMat);
+
+        this.myMesh.position.set(position.x,position.y,position.z);// = position;
+        this.myScene = scene;
+
+    }
+
+    update(deltaTime){
+        this.myMesh.position.add(this.direction.multiplyScalar(deltaTime * this.speed));
+        this.lifeTime -= deltaTime;
+
+        if(this.lifeTime < 0){
+            this.myMesh.geometry.dispose();
+            this.myMesh.material.dispose();
+            this.myScene.remove(this.myMesh);
+            delete this;
+        }
+    }
+
+}
+
+//boid 
+class Boid{
+    constructor(id,team,color,geom,scene){
         this.id = id;
         this.team = team;
         this.color = color;
         this.direction = new THREE.Vector3(randFloat(-1,1),randFloat(-1,1),randFloat(-1,1));
         this.direction.normalize();
         this.speed = 15;
+        this.myScene = scene;
 
-        
+        this.shootCooldown = 5;
+        this.shootCooldownLeft = 0
 
-        this.seperateRad = 3;
+        this.seperateRad = 5;
         this.alignRad    = 6;
         this.cohesionRad = 6;
         
-
-        this.seperateStr = 0.02;
-        this.alignStr =      0.01;
-        this.cohesionStr = 0.01;
-        
-
-        //const myGeom = new THREE.ConeGeometry(1,2,10,10);
-        const myGeom = new THREE.BoxGeometry();
-        const myMat = new THREE.MeshBasicMaterial({color: this.color, wireframe: false,});
-        this.myMesh = new THREE.Mesh(myGeom, myMat);
+        this.seperateStr = 8.5;
+        this.alignStr =    8;
+        this.cohesionStr = 8;
        
+        //const myGeom = new THREE.ConeGeometry(1,2,10,10);
+        const myGeom = geom;//new THREE.BoxGeometry();
+        const myMat = new THREE.MeshPhongMaterial({color: this.color, wireframe: false,});
+        this.myMesh = new THREE.Mesh(myGeom, myMat);
 
         this.myMesh.position.x = 0;
         this.myMesh.position.y = 0;
         this.myMesh.position.z = 0;
         this.myMesh.position.set(randFloat(-10,10),randFloat(-10,10),0);
 
-        //steer vars
-        let steerTotal;
-
-        //tmep
-        //show direction of boid
-        this.dirHelp = new THREE.ArrowHelper(this.direction, this.myMesh.position, 2, 0xff0000,);
-        scene.add(this.dirHelp);
-        
+        this.activeBullets = [];        
     }
-
 
     //return vector pointing in average direction of neighbours
     align(ships){
@@ -83,12 +108,13 @@ class SpaceShip{
         return this.cohesion(ships).multiplyScalar(-1);
     }
 
-
-
     //do boid stuff
     update(ships, deltaTime){
 
-    
+        for(let i = 0; i < this.activeBullets.length; i++){
+            this.activeBullets[i].update(deltaTime);
+        }
+
         let aliBoid = [];
         let sepBoid = [];
         let cohBoid = [];
@@ -109,36 +135,36 @@ class SpaceShip{
                 if(Math.abs(dir.length()) < this.alignRad && this.team == ships[i].team){
                     aliBoid.push(ships[i]);
                 }
+
             }
 
         }
-    
-        //add boid steer behavour
-        this.direction.add(this.seperate(sepBoid).multiplyScalar(this.seperateStr));
-        this.direction.add(this.   align(aliBoid).multiplyScalar(this.alignStr));
-        this.direction.add(this.cohesion(cohBoid).multiplyScalar(this.cohesionStr));
-        
 
-        this.direction.normalize();
+        //add boid steer behavour
+        this.direction.add(this.seperate(sepBoid).multiplyScalar(this.seperateStr * deltaTime));
+        this.direction.add(this.   align(aliBoid).multiplyScalar(this.alignStr  * deltaTime));
+        this.direction.add(this.cohesion(cohBoid).multiplyScalar(this.cohesionStr * deltaTime));
         
+        if(this.direction.length() > this.speed){
+            this.direction.normalize().multiplyScalar(this.speed);
+        }
 
         //apply direction vector to position
         let look = new Vector3();
         look.addVectors(this.direction, this.myMesh.position);
         this.myMesh.lookAt(look);
         
-        this.dirHelp.position.copy(this.myMesh.position);
-        this.dirHelp.setDirection(this.direction);
-        this.dirHelp.setLength(2);
+        //this.dirHelp.position.copy(this.myMesh.position);
+        //this.dirHelp.setDirection(this.direction);
+        //this.dirHelp.setLength(2);
        
-
-        this.myMesh.position.x += this.direction.x * this.speed * delta;
-        this.myMesh.position.y += this.direction.y * this.speed * delta;
-        this.myMesh.position.z += this.direction.z * this.speed * delta;
+        this.myMesh.position.x += this.direction.x * delta;
+        this.myMesh.position.y += this.direction.y * delta;
+        this.myMesh.position.z += this.direction.z * delta;
 
 
         const boxSize = 100;
-        const centMagnitism = 0.2;
+        const centMagnitism = this.cohesionStr * 2;
         if(this.myMesh.position.x > boxSize/2)
             this.direction.add(new Vector3(-1,0,0).multiplyScalar(centMagnitism ));
         if(this.myMesh.position.x < boxSize/-2)
@@ -153,34 +179,13 @@ class SpaceShip{
         this.direction.add(new Vector3(0,0,-1).multiplyScalar(centMagnitism ));
         if(this.myMesh.position.z < boxSize/-2)
         this.direction.add(new Vector3(0,0,1).multiplyScalar(centMagnitism ));
-
-        //inside limited volume
-        /*
-        const boxSize = 50;
-        if(this.myMesh.position.x > boxSize/2)
-            this.myMesh.position.x = boxSize/-2;
-        if(this.myMesh.position.x < boxSize/-2)
-            this.myMesh.position.x = boxSize/2;
-            
-        if(this.myMesh.position.y > boxSize/2)
-            this.myMesh.position.y = boxSize/-2;
-        if(this.myMesh.position.y < boxSize/-2)
-            this.myMesh.position.y = boxSize/2;
-            
-        if(this.myMesh.position.z > boxSize/2)
-            this.myMesh.position.z = boxSize/-2;
-        if(this.myMesh.position.z < boxSize/-2)
-            this.myMesh.position.z = boxSize/2;
-        */
-
     }
 
 }
-
-
-
+//////////////////////////
 // scene
-const scene = new THREE.Scene();
+const mainScene = new THREE.Scene();
+
 
 // camera
 const FOV = 90;
@@ -191,83 +196,122 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHei
 const renderer = new THREE.WebGLRenderer({canvas: document.querySelector("#bg"),});
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.render(scene, camera);//like glDraw()
 
 camera.position.z = 30;
 camera.position.y = 10;
 
-//add tool
-const axisTool = new THREE.AxesHelper(50);
-scene.add(axisTool);
+var clock = new THREE.Clock();
+var delta = 0;
 
 
-// Terrain shader
-const terrainMat = new THREE.ShaderMaterial({
-    uniforms: {
-        time: {value: 1.0},
-    },
-
-    vertexShader: document.getElementById( 'vertexshader' ).textContent,
-    fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-
-    wireframe: true,
-});
-
-const pWidth = 100;
-const pHeight = 100;
-const pRes = 30;
-
-let geom = new THREE.PlaneGeometry(pWidth,pHeight,pRes,pRes);
-const mat = new THREE.MeshBasicMaterial({color:0xff00fb, wireframe: true,});
-const terrain = new THREE.Mesh(geom, terrainMat);
-
-terrain.rotateX(80);
-scene.add(terrain);
-
-//spawn boids
+let shipCount = 500; 
 const ship = [];
-let shipCount = 200;
-let colors = [0xff00fb,0x00fff7];
-for(let i = 0; i < shipCount; i++){
-    let n = randInt(0,1);
-    ship[i] = (new SpaceShip(i,n, colors[n]));
-    scene.add(ship[i].myMesh);
+
+function animate(){
+
+    //animate boids
+    for(let i = 0; i < shipCount; i++){
+        ship[i].update(ship, delta);
+    }
+
+    delta = clock.getDelta();
+    requestAnimationFrame(animate);
+    renderer.render(mainScene, camera);
 }
 
-
-// resize func
 window.addEventListener( 'resize', onWindowResize, false );
 function onWindowResize(){
 
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
     renderer.setSize( window.innerWidth, window.innerHeight );
-
 }
 
-// main loop
+//3d object
 
-var clock = new THREE.Clock();
-var speed = 2;
-var delta = 0;
-function animate(){
+const onProgress = function ( xhr ) {
 
-    //animate terrain
-    terrainMat.uniforms.time.value += 1 * delta;
+    if ( xhr.lengthComputable ) {
 
-    //animate boids
-    for(let i = 0; i < shipCount; i++){
-        ship[i].update(ship)
+        const percentComplete = xhr.loaded / xhr.total * 100;
+        console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+
     }
 
+};
 
-    delta = clock.getDelta();
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+const ambientLight = new THREE.AmbientLight( 0xcccccc, 0.4 );
+mainScene.add( ambientLight );
 
-}
+const pointLight = new THREE.PointLight( 0xffffff, 0.8 );
+camera.add( pointLight );
+mainScene.add( camera );
 
-animate();
+//3d model
+let loader = new GLTFLoader();
+loader.load(
+    'models/vechicle.glb',
+    
+    //when models are loaded
+    function ( gltf ) {
+        let shipGeom = gltf.scene.children[0];
+        console.log(shipGeom);
+        //spawn spaceship boids
+        let colors = [0xb9b9b9,0xa6a6a6];
+        for(let i = 0; i < shipCount; i++){
+            let n = randInt(0,1);
+            ship[i] = (new Boid(i,n, colors[n], shipGeom.geometry, mainScene));
+            mainScene.add(ship[i].myMesh);
+        }
+        animate();
+    },
 
-//////////////
+    // called while loading is progressinga
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' + error);
+    }
+);    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//old wave code
+/*
+     // Terrain shader
+     const terrainMat = new THREE.ShaderMaterial({
+        uniforms: {
+            time: {value: 1.0},
+        },
+
+        vertexShader: document.getElementById( 'vertexshader' ).textContent,
+        fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+
+        wireframe: true,
+    });
+
+    const pWidth = 100;
+    const pHeight = 100;
+    const pRes = 30;
+
+    let geom = new THREE.PlaneGeometry(pWidth,pHeight,pRes,pRes);
+    const mat = new THREE.MeshBasicMaterial({color:0xff00fb, wireframe: true,});
+    const terrain = new THREE.Mesh(geom, terrainMat);
+
+    terrain.rotateX(80);
+    scene.add(terrain);
+*/
