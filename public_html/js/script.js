@@ -13,18 +13,18 @@ class Boid{
         this.color = color;
         this.direction = new THREE.Vector3(randFloat(-1,1),randFloat(-1,1),randFloat(-1,1));
         this.direction.normalize();
-        this.speed = 15;
+        this.speed = 16;
         this.myScene = scene;
 
-        this.shootCooldown = randFloat(2,10);
+        this.shootCooldown = randFloat(2,5);
         this.shootCooldownLeft = randFloat(1,2);
 
         this.seperateRad = 5;
-        this.alignRad    = 6;
+        this.alignRad    = 10;
         this.cohesionRad = 6;
         
         this.seperateStr = 8.5;
-        this.alignStr =    8;
+        this.alignStr =    10;
         this.cohesionStr = 8;
 
         this.isShooting = false;
@@ -33,11 +33,13 @@ class Boid{
         const myGeom = geom;//new THREE.BoxGeometry();
         const myMat = new THREE.MeshPhongMaterial({color: this.color, wireframe: false,});
         this.myMesh = new THREE.Mesh(myGeom, myMat);
+        
 
         this.myMesh.position.x = 0;
         this.myMesh.position.y = 0;
         this.myMesh.position.z = 0;
-        this.myMesh.position.set(randFloat(-10,10),randFloat(-10,10),0);
+        const dist = 10;
+        this.myMesh.position.set(randFloat(-dist,dist),randFloat(-dist,dist),randFloat(-dist,dist));
 
         this.activeBullets = [];
         this.bulletMesh = null;
@@ -111,8 +113,6 @@ class Boid{
                 if(len < 10 && ships[i].team != this.team){
                     this.shoot();
                 }
-
-
             }
 
         }
@@ -130,10 +130,6 @@ class Boid{
         let look = new Vector3();
         look.addVectors(this.direction, this.myMesh.position);
         this.myMesh.lookAt(look);
-        
-        //this.dirHelp.position.copy(this.myMesh.position);
-        //this.dirHelp.setDirection(this.direction);
-        //this.dirHelp.setLength(2);
        
         this.myMesh.position.x += this.direction.x * delta;
         this.myMesh.position.y += this.direction.y * delta;
@@ -221,13 +217,8 @@ camera.position.y = 10;
 var clock = new THREE.Clock();
 var delta = 0;
 
-
-let shipCount = 500; 
+let shipCount = 150; 
 const ship = [];
-
-
-let lastCalledTime;
-let fps;
 
 function animate(){
 
@@ -236,12 +227,8 @@ function animate(){
         ship[i].update(ship, delta);
     }
 
+    delta = clock.getDelta();
 
-     delta = clock.getDelta();
-
-   
-
-    
     requestAnimationFrame(animate);
     renderer.render(mainScene, camera);
 }
@@ -287,7 +274,7 @@ loader.load(
         let shipGeom = gltf.scene.children[0];
         console.log(shipGeom);
         //spawn spaceship boids
-        let colors = [0x00FFFF,0xFF00C9];
+        let colors = [0x008c8cF,0xFF00C9];
         for(let i = 0; i < shipCount; i++){
             let n = randInt(0,1);
             ship[i] = (new Boid(i,n, colors[n], shipGeom.geometry, mainScene));
